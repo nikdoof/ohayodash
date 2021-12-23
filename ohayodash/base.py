@@ -1,15 +1,21 @@
-from flask import Blueprint, render_template, abort
-from jinja2 import TemplateNotFound
 import datetime
+import os
+
 import kubernetes
 import yaml
+from flask import Blueprint, abort, render_template
+from jinja2 import TemplateNotFound
 
 ANNOTATION_BASE = 'ohayodash.github.io'
 
 base = Blueprint('base', __name__, template_folder='templates')
 
+
 def get_k8s_applications():
-    kubernetes.config.load_kube_config()
+    if 'KUBERNETES_SERVICE_HOST' in os.environ:
+        kubernetes.config.load_incluster_config()
+    else:
+        kubernetes.config.load_kube_config()
     v1 = kubernetes.client.NetworkingV1Api()
     ret = v1.list_ingress_for_all_namespaces(watch=False)
 
@@ -38,7 +44,10 @@ def get_k8s_applications():
 
 
 def get_bookmarks():
-    kubernetes.config.load_kube_config()
+    if 'KUBERNETES_SERVICE_HOST' in os.environ:
+        kubernetes.config.load_incluster_config()
+    else:
+        kubernetes.config.load_kube_config()
     v1 = kubernetes.client.CoreV1Api()
     ret = v1.list_config_map_for_all_namespaces(watch=False)
 
