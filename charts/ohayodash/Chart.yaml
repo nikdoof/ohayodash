@@ -1,7 +1,7 @@
 apiVersion: v2
 appVersion: 0.0.1
 description: Ohayo Dash is a Kubernetes driven start page and dashboard. All configuration is done by standard Kubernetes objects and ConfigMaps.
-name: hajimari
+name: ohayodash
 version: 0.0.1
 kubeVersion: ">=1.16.0-0"
 keywords:
