@@ -1,0 +1,20 @@
+apiVersion: v2
+appVersion: 0.0.1
+description: Ohayo Dash is a Kubernetes driven start page and dashboard. All configuration is done by standard Kubernetes objects and ConfigMaps.
+name: hajimari
+version: 0.0.1
+kubeVersion: ">=1.16.0-0"
+keywords:
+- ohayodash
+- startpage
+- dashboard
+home: https://github.com/nikdoof/ohayodash/tree/main/charts/hajimari
+sources:
+- https://github.com/nikdoof/ohayodash
+maintainers:
+- name: nikdoof
+  email: nikdoof@users.noreply.github.com
+dependencies:
+- name: common
+  repository: https://library-charts.k8s-at-home.com
+  version: 4.0.0

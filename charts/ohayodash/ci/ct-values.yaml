@@ -1,0 +1,8 @@
+ingress:
+  main:
+    enabled: true
+    hosts:
+      - host: ohayodash.domain.tld
+        paths:
+          - path: /
+            pathType: Prefix
