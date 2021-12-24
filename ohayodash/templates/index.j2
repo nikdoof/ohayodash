@@ -52,7 +52,7 @@
         </section>
 
         <section id="header">
-            <h1>{{ greeting | default("Welcome")}}</h1>
+            <h1><span title="{{ greeting[1] }}">{{ greeting[0] | default("Welcome")}}</span></h1>
             <h2>{{ now | format_datetime }}</h2>
         </section>
 

@@ -77,7 +77,7 @@ def get_bookmarks() -> list:
     return bookmarks
 
 
-def get_greeting():
+def get_greeting() -> tuple:
     """Generate the greeting string based on the defined timezone."""
     try:
         tz = zoneinfo.ZoneInfo(os.environ.get('TZ', 'UTC'))
@@ -88,10 +88,10 @@ def get_greeting():
     current_time = datetime.datetime.now(tz)
 
     if 0 < current_time.hour < 12:
-        return 'おはようございます!'
+        return 'おはようございます!', "Thats 'Good morning' in Japanese"
     elif current_time.hour >= 19:
-        return 'こんばんは'
-    return 'こんにちは'
+        return 'こんばんは', "Thats 'Good evening' in Japanese"
+    return 'こんにちは', "Thats 'Good day' in Japanese"
 
 
 @base.app_template_filter()
