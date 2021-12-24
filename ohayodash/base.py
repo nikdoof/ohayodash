@@ -1,49 +1,55 @@
 import datetime
+import logging
 import os
+import zoneinfo
 
 import kubernetes
 import yaml
-from flask import Blueprint, abort, render_template
-from jinja2 import TemplateNotFound
+from flask import Blueprint, render_template
 
 ANNOTATION_BASE = 'ohayodash.github.io'
 
 base = Blueprint('base', __name__, template_folder='templates')
 
 
-def get_k8s_applications():
+def get_k8s_applications() -> list:
+    """Get all ingresses from the cluster and produce a application list."""
     if 'KUBERNETES_SERVICE_HOST' in os.environ:
         kubernetes.config.load_incluster_config()
     else:
         kubernetes.config.load_kube_config()
-    v1 = kubernetes.client.NetworkingV1Api()
-    ret = v1.list_ingress_for_all_namespaces(watch=False)
+    api = kubernetes.client.NetworkingV1Api()
 
-    results = []
-    for ingress in ret.items:
+    applications = []
+    for ingress in api.list_ingress_for_all_namespaces(watch=False).items:
 
-        # Skip if
-        if f'{ANNOTATION_BASE}/enable' not in ingress.metadata.annotations or \
-                ingress.metadata.annotations[f'{ANNOTATION_BASE}/enable'] == 'false':
+        # Skip if not enabled
+        enable_annotation = '{0}/enable'.format(ANNOTATION_BASE)
+        if enable_annotation not in ingress.metadata.annotations:
+            continue
+        if ingress.metadata.annotations[enable_annotation] == 'false':
             continue
 
-        values = {
+        # Set to some basic values from the ingress
+        application_values = {
             'name': ingress.metadata.name,
             'namespace': ingress.metadata.namespace,
-            'url': f'https://{ingress.spec.rules[0].host}',
+            'url': 'https://{0}'.format(ingress.spec.rules[0].host),
             'show_url': False,
         }
 
-        for key in ingress.metadata.annotations:
+        # Read annotations and override the values if defined
+        for key, value in ingress.metadata.annotations.items():
             if key.startswith(ANNOTATION_BASE):
-                val = key.split('/')[1]
-                values[val] = ingress.metadata.annotations[key]
+                annotation_key = key.split('/')[1]
+                application_values[annotation_key] = value
 
-        results.append(values)
-    return sorted(results, key=lambda i: i['appName'])
+        applications.append(application_values)
+    return sorted(applications, key=lambda item: item['appName'])
 
 
-def get_bookmarks():
+def get_bookmarks() -> list:
+    """Get all 'bookmark' ConfigMaps from the cluster and produce a bookmark list."""
     if 'KUBERNETES_SERVICE_HOST' in os.environ:
         kubernetes.config.load_incluster_config()
     else:
@@ -55,11 +61,11 @@ def get_bookmarks():
     for cm in ret.items:
 
         # Skip if
-        if not cm.metadata.annotations or f'{ANNOTATION_BASE}/bookmarks' not in cm.metadata.annotations:
+        if not cm.metadata.annotations or '{0}/bookmarks'.format(ANNOTATION_BASE) not in cm.metadata.annotations:
             continue
 
-        data = yaml.safe_load(cm.data['bookmarks'])
-        for bookmark in data:
+        bookmark_data = yaml.safe_load(cm.data['bookmarks'])
+        for bookmark in bookmark_data:
             if 'group' not in bookmark:
                 group = 'default'
             else:
@@ -71,10 +77,28 @@ def get_bookmarks():
     return bookmarks
 
 
+def get_greeting():
+    """Generate the greeting string based on the defined timezone."""
+    try:
+        tz = zoneinfo.ZoneInfo(os.environ.get('TZ', 'UTC'))
+    except zoneinfo.ZoneInfoNotFound:
+        logging.warning('Timezone {0} is invalid, using UTC'.format(os.environ.get('TZ', 'UTC')))
+        tz = zoneinfo.ZoneInfo('UTC')
+
+    current_time = datetime.datetime.now(tz)
+
+    if 0 < current_time.hour < 12:
+        return 'おはようございます!'
+    elif current_time.hour >= 19:
+        return 'こんばんは'
+    return 'こんにちは'
+
+
 @base.route('/')
 def index():
-    return render_template(f'index.j2', **{
-        'now': datetime.datetime.utcnow(),
-        'applications': get_k8s_applications(),
-        'bookmarks': get_bookmarks(),
-    })
+    return render_template('index.j2',
+                           greeting=get_greeting(),
+                           now=datetime.datetime.utcnow(),
+                           applications=get_k8s_applications(),
+                           bookmarks=get_bookmarks(),
+                           )
