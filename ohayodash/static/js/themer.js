@@ -134,6 +134,15 @@ for (let i = 0; i < dataThemeButtons.length; i++) {
                 });
                 return;
 
+            case 'nord':
+                setTheme({
+                    'color-background': '#2E3440',
+                    'color-text-pri': '#E5E9F0',
+                    'color-text-acc': '#8FBCBB'
+                });
+                return;
+    
+
         }
     })
 }
