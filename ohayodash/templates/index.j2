@@ -63,7 +63,7 @@
                 {% for app in applications %}
                 <div class="apps_item">
                     <div class="apps_icon">
-                        <span class="iconify icon" data-icon="mdi-{{ app.icon | default("application") }}"></span>
+                        <a href="{{ app.url }}"><span class="iconify icon" data-icon="mdi-{{ app.icon | default("application") }}"></span></a>
                     </div>
                     <div class="apps_text">
                         <a href="{{ app.url }}">{{ app.name }}</a>
