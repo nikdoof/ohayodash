@@ -5,7 +5,7 @@ name: release chart
     branches:
       - main
     paths:
-      - "charts/ohayodash/**"
+      - "charts/**/Chart.yaml"
 
 jobs:
   release:
