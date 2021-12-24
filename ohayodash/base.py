@@ -12,7 +12,16 @@ ANNOTATION_BASE = 'ohayodash.github.io'
 base = Blueprint('base', __name__, template_folder='templates')
 
 
-def get_k8s_applications() -> list:
+def check_tags(tag, object):
+    # Skip if we're limited to a tag, and the CM has tags but not that one.
+    tags = object.metadata.annotations.get('{0}/tags'.format(ANNOTATION_BASE), None)
+    if tag and tags:
+        if tag not in {x for x in tags.split(',') if x != ''}:
+            return False
+    return True
+
+
+def get_k8s_applications(tag: str = None) -> list:
     """Get all ingresses from the cluster and produce a application list."""
     if 'KUBERNETES_SERVICE_HOST' in os.environ:
         kubernetes.config.load_incluster_config()
@@ -28,6 +37,10 @@ def get_k8s_applications() -> list:
         if enable_annotation not in ingress.metadata.annotations:
             continue
         if ingress.metadata.annotations[enable_annotation] == 'false':
+            continue
+
+        # Skip if we're limited to a tag, and the Ingress has tags but not that one.
+        if not check_tags(tag, ingress):
             continue
 
         # Set to some basic values from the ingress
@@ -48,7 +61,7 @@ def get_k8s_applications() -> list:
     return sorted(applications, key=lambda item: item['name'])
 
 
-def get_bookmarks() -> list:
+def get_bookmarks(tag: str = None) -> list:
     """Get all 'bookmark' ConfigMaps from the cluster and produce a bookmark list."""
     if 'KUBERNETES_SERVICE_HOST' in os.environ:
         kubernetes.config.load_incluster_config()
@@ -59,9 +72,16 @@ def get_bookmarks() -> list:
 
     bookmarks = {}
     for cm in ret.items:
+        # Skip if the CM has no annotations
+        if cm.metadata.annotations is None:
+            continue
 
-        # Skip if
-        if not cm.metadata.annotations or '{0}/bookmarks'.format(ANNOTATION_BASE) not in cm.metadata.annotations:
+        # Skip if its not tagged as bookmark CM
+        if '{0}/bookmarks'.format(ANNOTATION_BASE) not in cm.metadata.annotations:
+            continue
+
+        # Skip if we're limited to a tag, and the CM has tags but not that one.
+        if not check_tags(tag, cm):
             continue
 
         bookmark_data = yaml.safe_load(cm.data['bookmarks'])
@@ -94,8 +114,9 @@ def get_greeting() -> tuple:
     return 'こんにちは', "Thats 'Good day' in Japanese"
 
 
+# TODO: Replace with JS
 @base.app_template_filter()
-def format_datetime(value, format='medium'):
+def format_datetime(value):
     return value.strftime(os.environ.get('DATE_FORMAT', '%Y-%m-%d %H:%M'))  # noqa: WPS323
 
 
@@ -106,6 +127,16 @@ def index():
                            now=datetime.datetime.utcnow(),
                            applications=get_k8s_applications(),
                            bookmarks=get_bookmarks(),
+                           )
+
+
+@base.route('/<tag>')
+def tag(tag):
+    return render_template('index.j2',
+                           greeting=get_greeting(),
+                           now=datetime.datetime.utcnow(),
+                           applications=get_k8s_applications(tag),
+                           bookmarks=get_bookmarks(tag),
                            )
 
 
