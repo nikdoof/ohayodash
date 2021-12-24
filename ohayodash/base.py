@@ -5,7 +5,7 @@ import zoneinfo
 
 import kubernetes
 import yaml
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, jsonify
 
 ANNOTATION_BASE = 'ohayodash.github.io'
 
@@ -107,3 +107,13 @@ def index():
                            applications=get_k8s_applications(),
                            bookmarks=get_bookmarks(),
                            )
+
+
+@base.route('/api/applications')
+def applications():
+    return jsonify(get_k8s_applications())
+
+
+@base.route('/api/bookmarks')
+def bookmarks():
+    return jsonify(get_bookmarks())
