@@ -53,7 +53,7 @@
 
         <section id="header">
             <h1>{{ greeting | default("Welcome")}}</h1>
-            <h2>{{ now }}</h2>
+            <h2>{{ now | format_datetime }}</h2>
         </section>
 
         {% if applications %}

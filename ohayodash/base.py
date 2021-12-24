@@ -94,6 +94,11 @@ def get_greeting():
     return 'こんにちは'
 
 
+@base.app_template_filter()
+def format_datetime(value, format='medium'):
+    return value.strftime(os.environ.get('DATE_FORMAT', '%Y-%m-%d %H:%M'))  # noqa: WPS323
+
+
 @base.route('/')
 def index():
     return render_template('index.j2',
