@@ -20,7 +20,7 @@ function handleKeyPress(e) {
     if (key == 13) { // Search functions
         search(text);
     }
-    if(key == 32){ //Space to go to search
+    if (key == 32) { //Space to go to search
         document.getElementById("keywords").focus();
     }
     sindex = 0;
@@ -28,42 +28,7 @@ function handleKeyPress(e) {
 }
 
 function search(text) {
-    var option = text.substr(1, text.indexOf(' ') - 1) || text.substr(1);
-    var subtext = text.substr(2 + option.length);
-    if (text[0] === '/') {
-        if (text.indexOf(' ') > -1) {
-            switch (option) {
-                case "d":
-                    window.location = "https://duckduckgo.com/?q=" + subtext;
-                    break;
-                case "i":
-                    window.location = "https://www.imdb.com/find?q=" + subtext;
-                    break;
-                case "r":
-                    window.location = "https://www.reddit.com/search?q=" + subtext;
-                    break;
-                case "y":
-                    window.location = "https://www.youtube.com/results?search_query=" + subtext;
-                    break;
-            }
-        } else {
-            var option = text.substr(1);
-            switch (option) {
-                case "d":
-                    window.location = "https://www.duckduckgo.com";
-                    break;
-                case "y":
-                    window.location = "https://www.youtube.com";
-                    break;
-                case "r":
-                    window.location = "https://reddit.com";
-                    break;
-                case "s":
-                    window.location = "https://open.spotify.com";
-                    break;
-            }
-        }
-    } else if (validURL(text)) {
+    if (validURL(text)) {
         if (containsProtocol(text))
             window.location = text;
         else
@@ -89,7 +54,7 @@ function containsProtocol(str) {
     return !!pattern.test(str);
 }
 
-String.prototype.replaceAll = function(search, replacement) {
+String.prototype.replaceAll = function (search, replacement) {
     var target = this;
     return target.split(search).join(replacement);
 };
