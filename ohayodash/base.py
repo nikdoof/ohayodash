@@ -45,7 +45,7 @@ def get_k8s_applications() -> list:
                 application_values[annotation_key] = value
 
         applications.append(application_values)
-    return sorted(applications, key=lambda item: item['appName'])
+    return sorted(applications, key=lambda item: item['name'])
 
 
 def get_bookmarks() -> list:
