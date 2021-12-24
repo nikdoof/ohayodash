@@ -494,6 +494,12 @@ table a{
     color: #4C432E;
 }
 
+.theme-nord{
+	background-color: #2E3440;
+	border: 4px solid #8FBCBB;
+    color: #E5E9F0;
+}
+
 
 /* MEDIA QUERIES */
 
