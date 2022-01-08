@@ -2,6 +2,31 @@ apiVersion: v1
 entries:
   ohayodash:
   - apiVersion: v2
+    appVersion: 0.2.1
+    created: "2022-01-08T16:56:45.226687583Z"
+    dependencies:
+    - name: common
+      repository: https://library-charts.k8s-at-home.com
+      version: 4.3.0
+    description: Ohayo Dash is a Kubernetes driven start page and dashboard. All configuration
+      is done by standard Kubernetes objects and ConfigMaps.
+    digest: 07a70497c50528ce7e28a2ca2d5b76a858bb3329626c391f5a706cc97108f383
+    home: https://github.com/nikdoof/ohayodash/tree/main/charts/ohayodash
+    keywords:
+    - ohayodash
+    - startpage
+    - dashboard
+    kubeVersion: '>=1.16.0-0'
+    maintainers:
+    - email: nikdoof@users.noreply.github.com
+      name: nikdoof
+    name: ohayodash
+    sources:
+    - https://github.com/nikdoof/ohayodash
+    urls:
+    - https://github.com/nikdoof/ohayodash/releases/download/ohayodash-helm-chart-0.2.1/ohayodash-0.2.1.tgz
+    version: 0.2.1
+  - apiVersion: v2
     appVersion: 0.2.0
     created: "2022-01-08T15:47:38.202067158Z"
     dependencies:
@@ -151,4 +176,4 @@ entries:
     urls:
     - https://github.com/nikdoof/ohayodash/releases/download/ohayodash-helm-chart-0.0.1/ohayodash-0.0.1.tgz
     version: 0.0.1
-generated: "2022-01-08T15:47:38.202230669Z"
+generated: "2022-01-08T16:56:45.226714484Z"
