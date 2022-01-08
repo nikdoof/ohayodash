@@ -1,11 +1,8 @@
-import datetime
-import logging
 import os
-import zoneinfo
 
 import kubernetes
 import yaml
-from flask import Blueprint, render_template, jsonify
+from flask import Blueprint, jsonify, render_template
 
 ANNOTATION_BASE = 'ohayodash.github.io'
 
@@ -14,11 +11,19 @@ base = Blueprint('base', __name__, template_folder='templates')
 
 def check_tags(tag, object):
     # Skip if we're limited to a tag, and the CM has tags but not that one.
-    tags = object.metadata.annotations.get('{0}/tags'.format(ANNOTATION_BASE), None)
-    if tag and tags:
-        if tag not in {x for x in tags.split(',') if x != ''}:
-            return False
-    return True
+    tags = object.metadata.annotations.get('{0}/tags'.format(ANNOTATION_BASE), '')
+    obj_tags = {x for x in tags.split(',') if x != ''}
+
+    # If its not tagged, allow
+    if not obj_tags:
+        return True
+
+    # If tag is on the object, allow
+    if tag in obj_tags:
+        return True
+
+    # Else, disallow
+    return False
 
 
 def get_k8s_applications(tag: str = None) -> list:
@@ -70,7 +75,7 @@ def get_bookmarks(tag: str = None) -> list:
     v1 = kubernetes.client.CoreV1Api()
     ret = v1.list_config_map_for_all_namespaces(watch=False)
 
-    bookmarks = {}
+    bookmarks = []
     for cm in ret.items:
         # Skip if the CM has no annotations
         if cm.metadata.annotations is None:
@@ -84,67 +89,64 @@ def get_bookmarks(tag: str = None) -> list:
         if not check_tags(tag, cm):
             continue
 
+        # Load bookmark data
         bookmark_data = yaml.safe_load(cm.data['bookmarks'])
+
+        # Iterate each bookmark
         for bookmark in bookmark_data:
             if 'group' not in bookmark:
                 group = 'default'
             else:
                 group = bookmark['group'].lower()
-            if group not in bookmarks:
-                bookmarks[group] = []
-            bookmarks[group].append(bookmark)
+
+            # Find category dict and append or create
+            for cat in bookmarks:
+                if cat['category'] == group:
+                    cat['links'].append(bookmark)
+                    break
+            else:
+                bookmarks.append({'category': group, 'links': [bookmark]})
 
     return bookmarks
 
 
-def get_greeting() -> tuple:
-    """Generate the greeting string based on the defined timezone."""
-    try:
-        tz = zoneinfo.ZoneInfo(os.environ.get('TZ', 'UTC'))
-    except zoneinfo.ZoneInfoNotFound:
-        logging.warning('Timezone {0} is invalid, using UTC'.format(os.environ.get('TZ', 'UTC')))
-        tz = zoneinfo.ZoneInfo('UTC')
-
-    current_time = datetime.datetime.now(tz)
-
-    if 0 < current_time.hour < 12:
-        return 'おはようございます!', "Thats 'Good morning' in Japanese"
-    elif current_time.hour >= 19:
-        return 'こんばんは', "Thats 'Good evening' in Japanese"
-    return 'こんにちは', "Thats 'Good day' in Japanese"
-
-
-# TODO: Replace with JS
-@base.app_template_filter()
-def format_datetime(value):
-    return value.strftime(os.environ.get('DATE_FORMAT', '%Y-%m-%d %H:%M'))  # noqa: WPS323
-
-
 @base.route('/')
-def index():
-    return render_template('index.j2',
-                           greeting=get_greeting(),
-                           now=datetime.datetime.utcnow(),
-                           applications=get_k8s_applications(),
-                           bookmarks=get_bookmarks(),
-                           )
+@base.route('/<tag>/')
+def index(tag=None):
+    return render_template('index.j2')
 
 
-@base.route('/<tag>')
-def tag(tag):
-    return render_template('index.j2',
-                           greeting=get_greeting(),
-                           now=datetime.datetime.utcnow(),
-                           applications=get_k8s_applications(tag),
-                           bookmarks=get_bookmarks(tag),
-                           )
+@base.route('/providers.json')
+@base.route('/<tag>/providers.json')
+def providers(tag=None):
+    return jsonify({
+        'providers': [
+            {'name': 'Allmusic', 'url': 'https://www.allmusic.com/search/all/', 'prefix': '/a'},
+            {'name': 'Discogs', 'url': 'https://www.discogs.com/search/?q=', 'prefix': '/di'},
+            {'name': 'Duck Duck Go', 'url': 'https://duckduckgo.com/?q=', 'prefix': '/d'},
+            {'name': 'iMDB', 'url': 'https://www.imdb.com/find?q=', 'prefix': '/i'},
+            {'name': 'TheMovieDB', 'url': 'https://www.themoviedb.org/search?query=', 'prefix': '/m'},
+            {'name': 'Reddit', 'url': 'https://www.reddit.com/search?q=', 'prefix': '/r'},
+            {'name': 'Qwant', 'url': 'https://www.qwant.com/?q=', 'prefix': '/q'},
+            {'name': 'Soundcloud', 'url': 'https://soundcloud.com/search?q=', 'prefix': '/so'},
+            {'name': 'Spotify', 'url': 'https://open.spotify.com/search/results/', 'prefix': '/s'},
+            {'name': 'TheTVDB', 'url': 'https://www.thetvdb.com/search?query=', 'prefix': '/tv'},
+            {'name': 'Trakt', 'url': 'https://trakt.tv/search?query=', 'prefix': '/t'}
+        ]
+    })
 
 
-@base.route('/api/applications')
-def applications():
-    return jsonify(get_k8s_applications())
+@base.route('/apps.json')
+@base.route('/<tag>/apps.json')
+def applications(tag=None):
+    return jsonify({
+        'apps': get_k8s_applications(tag)
+    })
 
 
-@base.route('/api/bookmarks')
-def bookmarks():
-    return jsonify(get_bookmarks())
+@base.route('/links.json')
+@base.route('/<tag>/links.json')
+def bookmarks(tag=None):
+    return jsonify({
+        'bookmarks': get_bookmarks(tag)
+    })
