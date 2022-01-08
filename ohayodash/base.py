@@ -8,30 +8,27 @@ ANNOTATION_BASE = 'ohayodash.github.io'
 
 base = Blueprint('base', __name__, template_folder='templates')
 
+if 'KUBERNETES_SERVICE_HOST' in os.environ:
+    kubernetes.config.load_incluster_config()
+else:
+    kubernetes.config.load_kube_config()
 
-def check_tags(tag, object):
+
+def check_tags(tag, kubeobj):
     # Skip if we're limited to a tag, and the CM has tags but not that one.
-    tags = object.metadata.annotations.get('{0}/tags'.format(ANNOTATION_BASE), '')
-    obj_tags = {x for x in tags.split(',') if x != ''}
+    tags = kubeobj.metadata.annotations.get('{0}/tags'.format(ANNOTATION_BASE), '')
+    obj_tags = {tagname for tagname in tags.split(',') if tagname != ''}
 
     # If its not tagged, allow
     if not obj_tags:
         return True
 
     # If tag is on the object, allow
-    if tag in obj_tags:
-        return True
-
-    # Else, disallow
-    return False
+    return tag in obj_tags
 
 
 def get_k8s_applications(tag: str = None) -> list:
     """Get all ingresses from the cluster and produce a application list."""
-    if 'KUBERNETES_SERVICE_HOST' in os.environ:
-        kubernetes.config.load_incluster_config()
-    else:
-        kubernetes.config.load_kube_config()
     api = kubernetes.client.NetworkingV1Api()
 
     applications = []
@@ -68,10 +65,6 @@ def get_k8s_applications(tag: str = None) -> list:
 
 def get_bookmarks(tag: str = None) -> list:
     """Get all 'bookmark' ConfigMaps from the cluster and produce a bookmark list."""
-    if 'KUBERNETES_SERVICE_HOST' in os.environ:
-        kubernetes.config.load_incluster_config()
-    else:
-        kubernetes.config.load_kube_config()
     v1 = kubernetes.client.CoreV1Api()
     ret = v1.list_config_map_for_all_namespaces(watch=False)
 
@@ -131,8 +124,8 @@ def providers(tag=None):
             {'name': 'Soundcloud', 'url': 'https://soundcloud.com/search?q=', 'prefix': '/so'},
             {'name': 'Spotify', 'url': 'https://open.spotify.com/search/results/', 'prefix': '/s'},
             {'name': 'TheTVDB', 'url': 'https://www.thetvdb.com/search?query=', 'prefix': '/tv'},
-            {'name': 'Trakt', 'url': 'https://trakt.tv/search?query=', 'prefix': '/t'}
-        ]
+            {'name': 'Trakt', 'url': 'https://trakt.tv/search?query=', 'prefix': '/t'},
+        ],
     })
 
 
@@ -140,7 +133,7 @@ def providers(tag=None):
 @base.route('/<tag>/apps.json')
 def applications(tag=None):
     return jsonify({
-        'apps': get_k8s_applications(tag)
+        'apps': get_k8s_applications(tag),
     })
 
 
@@ -148,5 +141,5 @@ def applications(tag=None):
 @base.route('/<tag>/links.json')
 def bookmarks(tag=None):
     return jsonify({
-        'bookmarks': get_bookmarks(tag)
+        'bookmarks': get_bookmarks(tag),
     })
