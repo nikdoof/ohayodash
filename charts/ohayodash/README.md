@@ -1,6 +1,6 @@
 # ohayodash
 
-![Version: 0.1.2](https://img.shields.io/badge/Version-0.1.2-informational?style=flat-square) ![AppVersion: 0.1.2](https://img.shields.io/badge/AppVersion-0.1.2-informational?style=flat-square)
+![Version: 0.2.0](https://img.shields.io/badge/Version-0.2.0-informational?style=flat-square) ![AppVersion: 0.2.0](https://img.shields.io/badge/AppVersion-0.2.0-informational?style=flat-square)
 
 Ohayo Dash is a Kubernetes driven start page and dashboard. All configuration is done by standard Kubernetes objects and ConfigMaps.
 
@@ -18,7 +18,7 @@ Kubernetes: `>=1.16.0-0`
 
 | Repository | Name | Version |
 |------------|------|---------|
-| https://library-charts.k8s-at-home.com | common | 4.2.0 |
+| https://library-charts.k8s-at-home.com | common | 4.3.0 |
 
 ## TL;DR
 
@@ -74,11 +74,10 @@ helm install ohayodash ohayodash/ohayodash -f values.yaml
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | env | object | See below | environment variables. |
-| env.DATE_FORMAT | string | `"%Y-%m-%d %H:%M"` | Python date format string to use for rendering the date/time |
 | env.TZ | string | `"UTC"` | Set the container timezone |
-| image.pullPolicy | string | `"Always"` | image pull policy |
+| image.pullPolicy | string | `"IfNotPresent"` | image pull policy |
 | image.repository | string | `"ghcr.io/nikdoof/ohayodash"` | image repository |
-| image.tag | string | `"latest"` | image tag |
+| image.tag | string | `"0.2.0"` | image tag |
 | ingress.main | object | See values.yaml | Enable and configure ingress settings for the chart under this key. |
 | service | object | See values.yaml | Configures service settings for the chart. |
 | serviceAccount | object | See below | Configures service account needed for reading k8s ingress objects |
