@@ -38,3 +38,24 @@ ingress:
   # @default -- See values.yaml
   main:
     enabled: false
+
+# configmap:
+#   bookmarks:
+#     enabled: false
+#     annotations:
+#       ohayodash.github.io/bookmarks: "true"
+#     data:
+#       bookmarks:
+#         - name: TV Calendar
+#           url: https://www.pogdesign.co.uk/cat/
+#           group: Tools
+#   providers:
+#     enabled: false
+#     annotations:
+#       ohayodash.github.io/providers: "true"
+#     data:
+#       providers:
+#         - name: Trakt
+#           url: https://trakt.tv/
+#           search: search?query=
+#           prefix: /t
