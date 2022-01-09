@@ -104,6 +104,31 @@ def get_bookmarks(tag: str = None) -> list:
     return bookmarks
 
 
+def get_providers(tag: str = None) -> list:
+    """Get all 'provider' ConfigMaps from the cluster and produce a provider list."""
+    v1 = kubernetes.client.CoreV1Api()
+    ret = v1.list_config_map_for_all_namespaces(watch=False)
+
+    providers = []
+    for cm in ret.items:
+        # Skip if the CM has no annotations
+        if cm.metadata.annotations is None:
+            continue
+
+        # Skip if its not tagged as bookmark CM
+        if '{0}/providers'.format(ANNOTATION_BASE) not in cm.metadata.annotations:
+            continue
+
+        # Skip if we're limited to a tag, and the CM has tags but not that one.
+        if not check_tags(tag, cm):
+            continue
+
+        provider_data = yaml.safe_load(cm.data['providers'])
+        providers.extend(provider_data)
+
+    return providers
+
+
 @base.route('/')
 @base.route('/<tag>/')
 def index(tag=None):
@@ -113,9 +138,11 @@ def index(tag=None):
 @base.route('/providers.json')
 @base.route('/<tag>/providers.json')
 def providers(tag=None):
-    data_file = pkg_resources.resource_filename(__name__, 'data/providers.yaml')
-    with open(data_file, 'r') as fobj:
-        providers = yaml.safe_load(fobj)
+    providers = get_providers(tag)
+    if not providers:
+        data_file = pkg_resources.resource_filename(__name__, 'data/providers.yaml')
+        with open(data_file, 'r') as fobj:
+            providers.extend(yaml.safe_load(fobj))
     return jsonify({'providers': providers})
 
 

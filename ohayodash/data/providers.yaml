@@ -11,6 +11,10 @@
   url: https://duckduckgo.com/
   search: "?q="
   prefix: /d
+- name: Google
+  url: https://google.com/
+  search: search/?q=
+  prefix: /g
 - name: iMDB
   url: https://imbdb.com/
   search: find?q=
