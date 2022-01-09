@@ -138,12 +138,12 @@ def index(tag=None):
 @base.route('/providers.json')
 @base.route('/<tag>/providers.json')
 def providers(tag=None):
-    providers = get_providers(tag)
-    if not providers:
+    k8s_providers = get_providers(tag)
+    if not k8s_providers:
         data_file = pkg_resources.resource_filename(__name__, 'data/providers.yaml')
         with open(data_file, 'r') as fobj:
-            providers.extend(yaml.safe_load(fobj))
-    return jsonify({'providers': providers})
+            k8s_providers.extend(yaml.safe_load(fobj))
+    return jsonify({'providers': k8s_providers})
 
 
 @base.route('/apps.json')
