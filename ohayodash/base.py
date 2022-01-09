@@ -1,6 +1,7 @@
 import os
 
 import kubernetes
+import pkg_resources
 import yaml
 from flask import Blueprint, jsonify, render_template
 
@@ -112,21 +113,10 @@ def index(tag=None):
 @base.route('/providers.json')
 @base.route('/<tag>/providers.json')
 def providers(tag=None):
-    return jsonify({
-        'providers': [
-            {'name': 'Allmusic', 'url': 'https://www.allmusic.com/search/all/', 'prefix': '/a'},
-            {'name': 'Discogs', 'url': 'https://www.discogs.com/search/?q=', 'prefix': '/di'},
-            {'name': 'Duck Duck Go', 'url': 'https://duckduckgo.com/?q=', 'prefix': '/d'},
-            {'name': 'iMDB', 'url': 'https://www.imdb.com/find?q=', 'prefix': '/i'},
-            {'name': 'TheMovieDB', 'url': 'https://www.themoviedb.org/search?query=', 'prefix': '/m'},
-            {'name': 'Reddit', 'url': 'https://www.reddit.com/search?q=', 'prefix': '/r'},
-            {'name': 'Qwant', 'url': 'https://www.qwant.com/?q=', 'prefix': '/q'},
-            {'name': 'Soundcloud', 'url': 'https://soundcloud.com/search?q=', 'prefix': '/so'},
-            {'name': 'Spotify', 'url': 'https://open.spotify.com/search/results/', 'prefix': '/s'},
-            {'name': 'TheTVDB', 'url': 'https://www.thetvdb.com/search?query=', 'prefix': '/tv'},
-            {'name': 'Trakt', 'url': 'https://trakt.tv/search?query=', 'prefix': '/t'},
-        ],
-    })
+    data_file = pkg_resources.resource_filename(__name__, 'data/providers.yaml')
+    with open(data_file, 'r') as fobj:
+        providers = yaml.safe_load(fobj)
+    return jsonify({'providers': providers})
 
 
 @base.route('/apps.json')
