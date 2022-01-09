@@ -1,6 +1,6 @@
 var sindex = 0;
 var cycle = false;
-var sengine = "https://www.google.com/?q="; // Default search engine
+var sengine = "https://www.google.com/search?q="; // Default search engine
 
 function start() {
     var query = getParameterByName('q');
