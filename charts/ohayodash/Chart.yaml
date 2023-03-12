@@ -1,8 +1,8 @@
 apiVersion: v2
-appVersion: 0.3.0
+appVersion: 0.4.0
 description: Ohayo Dash is a Kubernetes driven start page and dashboard. All configuration is done by standard Kubernetes objects and ConfigMaps.
 name: ohayodash
-version: 0.3.0
+version: 0.4.0
 kubeVersion: ">=1.19.0-0"
 keywords:
 - ohayodash
@@ -16,5 +16,5 @@ maintainers:
   email: nikdoof@users.noreply.github.com
 dependencies:
 - name: common
-  repository: https://library-charts.k8s-at-home.com
-  version: 4.3.0
+  repository: https://nikdoof.github.io/helm-charts/
+  version: 4.5.3
