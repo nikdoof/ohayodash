@@ -10,7 +10,6 @@ dependencies = [
     "gunicorn>=23.0.0",
     "kubernetes>=33.1.0",
     "pyyaml>=6.0.2",
-    "setuptools>=80.9.0",
 ]
 
 [dependency-groups]
