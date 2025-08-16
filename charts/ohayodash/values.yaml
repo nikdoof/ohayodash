@@ -11,7 +11,7 @@ image:
   # -- image pull policy
   pullPolicy: IfNotPresent
   # -- image tag
-  tag: 0.6.0
+  tag: 0.6.2
 
 # -- environment variables.
 # @default -- See below
@@ -25,7 +25,7 @@ service:
   main:
     ports:
       http:
-        port: 80
+        port: 8000
 
 # -- Configures service account needed for reading k8s ingress objects
 # @default -- See below
