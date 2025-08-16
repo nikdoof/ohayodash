@@ -1,6 +1,6 @@
 [project]
 name = "ohayodash"
-version = "0.6.1"
+version = "0.6.3"
 description = "Ohayo Dash is a Kubernetes driven start page and dashboard"
 license = "MIT"
 readme = "README.md"
