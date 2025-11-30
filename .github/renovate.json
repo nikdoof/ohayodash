@@ -1,6 +1,7 @@
 {
     "extends": [
         "config:base",
+        "github>nikdoof/renovate-config:github",
         "github>nikdoof/renovate-config:python"
     ]
 }
