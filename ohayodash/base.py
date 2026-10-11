@@ -17,7 +17,7 @@ else:
 
 def check_tags(tag, kubeobj):
     # Skip if we're limited to a tag, and the CM has tags but not that one.
-    tags = kubeobj.metadata.annotations.get("{0}/tags".format(ANNOTATION_BASE), "")
+    tags = kubeobj.metadata.annotations.get(f"{ANNOTATION_BASE}/tags", "")
     obj_tags = {tagname for tagname in tags.split(",") if tagname != ""}
 
     # If its not tagged, allow
@@ -35,7 +35,7 @@ def get_k8s_applications(tag: str | None = None) -> list:
     applications = []
     for ingress in api.list_ingress_for_all_namespaces(watch=False).items:
         # Skip if not enabled
-        enable_annotation = "{0}/enable".format(ANNOTATION_BASE)
+        enable_annotation = f"{ANNOTATION_BASE}/enable"
         if enable_annotation not in ingress.metadata.annotations:
             continue
         if ingress.metadata.annotations[enable_annotation] == "false":
@@ -49,7 +49,7 @@ def get_k8s_applications(tag: str | None = None) -> list:
         application_values = {
             "name": ingress.metadata.name,
             "namespace": ingress.metadata.namespace,
-            "url": "https://{0}".format(ingress.spec.rules[0].host),
+            "url": f"https://{ingress.spec.rules[0].host}",
             "show_url": False,
         }
 
@@ -75,7 +75,7 @@ def get_bookmarks(tag: str | None = None) -> list:
             continue
 
         # Skip if its not tagged as bookmark CM
-        if "{0}/bookmarks".format(ANNOTATION_BASE) not in cm.metadata.annotations:
+        if f"{ANNOTATION_BASE}/bookmarks" not in cm.metadata.annotations:
             continue
 
         # Skip if we're limited to a tag, and the CM has tags but not that one.
@@ -115,7 +115,7 @@ def get_providers(tag: str | None = None) -> list:
             continue
 
         # Skip if its not tagged as bookmark CM
-        if "{0}/providers".format(ANNOTATION_BASE) not in cm.metadata.annotations:
+        if f"{ANNOTATION_BASE}/providers" not in cm.metadata.annotations:
             continue
 
         # Skip if we're limited to a tag, and the CM has tags but not that one.
@@ -140,9 +140,8 @@ def providers(tag=None):
     k8s_providers = get_providers(tag)
     if not k8s_providers:
         data_file = importlib.resources.files(__name__) / "data/providers.yaml"
-        with importlib.resources.as_file(data_file) as path:
-            with path.open("r") as fobj:
-                k8s_providers.extend(yaml.safe_load(fobj))
+        with importlib.resources.as_file(data_file) as path, path.open("r") as fobj:
+            k8s_providers.extend(yaml.safe_load(fobj))
     return jsonify({"providers": k8s_providers})
 
 
